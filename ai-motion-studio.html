@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Motion Studio | Professional Character Animation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#09090b;--surface:#121217;--surface2:#1c1c24;
+  --border:rgba(255,255,255,0.08);--border-hover:rgba(255,255,255,0.15);
+  --primary:#6366f1;--primary-glow:rgba(99,102,241,0.25);
+  --secondary:#ec4899;
+  --text:#f8fafc;--muted:#94a3b8;
+  --success:#10b981;--error:#ef4444;--warn:#f59e0b;
+}
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    line-height: 1.5;
+}
+body::before {
+    content: '';
+    position: fixed;
+    top: -300px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+.container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Typography & Header */
+.header { text-align: center; margin-bottom: 2.5rem; animation: fadeUp 0.6s ease both; }
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #818cf8;
+    margin-bottom: 1.2rem;
+}
+.pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); animation: pulse 2s infinite; }
+h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #ffffff 0%, #818cf8 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.8rem;
+    letter-spacing: -0.02em;
+}
+.subtitle { color: var(--muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto; }
+
+/* Dashboard Cards */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    animation: fadeUp 0.6s ease both;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+}
+.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
+.card-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.icon-indigo { background: rgba(99,102,241,0.15); color: #818cf8; }
+.icon-pink { background: rgba(236,72,153,0.15); color: #f472b6; }
+.icon-emerald { background: rgba(16,185,129,0.15); color: #34d399; }
+.card-title { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 600; color: #fff; }
+.card-desc { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+
+/* Credits & Cost Bar */
+.credits-wrapper {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px 16px; margin-bottom: 1.25rem;
+}
+.credits-amount { display: flex; align-items: baseline; gap: 6px; }
+.credits-count { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--success); }
+.credits-label { font-size: 0.85rem; color: var(--muted); }
+.btn-refresh {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px; color: var(--text);
+    font-size: 0.8rem; cursor: pointer; transition: 0.2s;
+    display: flex; align-items: center; gap: 6px;
+}
+.btn-refresh:hover { background: rgba(255,255,255,0.1); border-color: var(--border-hover); }
+
+/* Model Selection */
+.model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+.model-box {
+    border: 1px solid var(--border); border-radius: 12px; padding: 14px;
+    cursor: pointer; transition: 0.2s; position: relative; background: var(--surface2);
+}
+.model-box:hover { border-color: var(--border-hover); }
+.model-box.active {
+    border-color: var(--primary); background: rgba(99,102,241,0.08);
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+.model-name { font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 600; margin-bottom: 4px; }
+.model-box.active .model-name { color: #818cf8; }
+.model-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+.badge-pro { background: rgba(236,72,153,0.15); color: #f472b6; font-size: 0.7rem; padding: 2px 8px; border-radius: 100px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.check-icon { position: absolute; top: 12px; right: 12px; color: var(--primary); display: none; font-size: 1.2rem; }
+.model-box.active .check-icon { display: block; }
+
+/* Cost Preview */
+.cost-panel {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(99,102,241,0.05); border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 1.5rem;
+}
+.cost-stat { text-align: right; }
+.cost-val { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.2rem; color: var(--warn); }
+.cost-sub { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;}
+
+/* Forms & Inputs */
+.form-group { margin-bottom: 1rem; }
+label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+input[type=text], input[type=password], select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 16px; color: var(--text);
+    font-family: inherit; font-size: 0.95rem; outline: none; transition: 0.2s;
+}
+input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Upload Zones */
+.upload-zone {
+    border: 2px dashed var(--border); border-radius: 16px; padding: 2rem 1.5rem;
+    text-align: center; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
+    background: rgba(255,255,255,0.02);
+}
+.upload-zone:hover { border-color: var(--primary); background: rgba(99,102,241,0.04); }
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-icon { font-size: 2rem; margin-bottom: 10px; }
+.upload-text { font-weight: 500; margin-bottom: 4px; }
+.upload-hint { font-size: 0.8rem; color: var(--muted); }
+.upload-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; margin-top: 12px; display: none; border: 1px solid var(--border); }
+.file-name { font-size: 0.85rem; color: var(--success); margin-top: 10px; display: none; font-weight: 500;}
+
+/* Progress Bar */
+.progress-container { width: 100%; height: 4px; background: var(--surface2); border-radius: 100px; margin-top: 12px; display: none; overflow: hidden; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; transition: width 0.3s ease; }
+
+/* Action Button */
+.btn-primary {
+    width: 100%; padding: 16px; font-family: 'Outfit', sans-serif; font-size: 1.1rem;
+    font-weight: 700; color: white; background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none; border-radius: 14px; cursor: pointer; transition: 0.2s;
+    box-shadow: 0 4px 15px rgba(99,102,241,0.3); margin-top: 10px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Status & Results */
+.status-panel { border-radius: 16px; padding: 16px 20px; margin-top: 1.5rem; display: none; animation: fadeUp 0.4s ease; }
+.status-waiting { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); }
+.status-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+.status-title { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
+.status-waiting .status-title { color: var(--warn); }
+.status-error .status-title { color: var(--error); }
+.status-desc { font-size: 0.9rem; color: var(--muted); }
+.task-id { font-size: 0.75rem; color: var(--muted); font-family: monospace; margin-top: 10px; opacity: 0.7; }
+
+.result-panel { background: var(--surface); border: 1px solid rgba(16,185,129,0.3); border-radius: 20px; padding: 1.5rem; margin-top: 1.5rem; display: none; box-shadow: 0 0 30px rgba(16,185,129,0.1); animation: fadeUp 0.6s ease; }
+.result-header { text-align: center; margin-bottom: 1rem; color: var(--success); font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 600; }
+video { width: 100%; border-radius: 12px; background: #000; border: 1px solid var(--border); outline: none; }
+.btn-download { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; margin-top: 1rem; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; color: var(--success); font-family: 'Outfit', sans-serif; font-weight: 600; text-decoration: none; transition: 0.2s; }
+.btn-download:hover { background: rgba(16,185,129,0.2); }
+
+/* Utilities */
+.tip-box { display: flex; gap: 10px; background: rgba(99,102,241,0.08); border-left: 3px solid var(--primary); padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
+.spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--primary-glow); } 50% { opacity: 0.5; box-shadow: 0 0 0 4px transparent; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="badge"><div class="pulse-dot"></div> KIE AI · Professional Motion Engine</div>
+        <h1>AI Motion Studio</h1>
+        <p class="subtitle">Transform static portraits into seamless cinematic animations using advanced Kling 3.0 AI technology.</p>
+    </div>
+
+    <!-- API & Balance Section -->
+    <div class="card">
+        <div class="card-header" style="margin-bottom: 1rem;">
+            <div class="card-icon icon-indigo">🔑</div>
+            <div>
+                <div class="card-title">Authentication</div>
+                <div class="card-desc">Enter your API key to sync workspace data.</div>
+            </div>
+        </div>
+        
+        <input type="password" id="apiKey" placeholder="sk-..." oninput="debounceKeyChange()"/>
+        
+        <div class="credits-wrapper" style="margin-top: 1rem; margin-bottom: 0;">
+            <div>
+                <div class="credits-label">Available Balance</div>
+                <div class="credits-amount">
+                    <span class="credits-count" id="creditsCount">--</span>
+                    <span style="color: var(--muted); font-size: 0.9rem;">credits</span>
+                </div>
+            </div>
+            <button class="btn-refresh" onclick="fetchCredits()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="refreshIcon"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- AI Model Selection -->
+    <div class="model-grid">
+        <div class="model-box active" id="model30" onclick="selectModel('3.0')">
+            <div class="check-icon">✓</div>
+            <div class="model-name">Kling 3.0 <span class="badge-pro">PRO</span></div>
+            <div class="model-desc">Flagship model. Best physics, ultra-realistic motion.</div>
+            <div style="font-size: 0.8rem; font-weight: 500; color: var(--warn);">Est. 100 - 300 credits</div>
+        </div>
+        <div class="model-box" id="model26" onclick="selectModel('2.6')">
+            <div class="check-icon">✓</div>
+            <div class="model-name">Kling 2.6</div>
+            <div class="model-desc">Standard model. Faster rendering, reliable output.</div>
+            <div style="font-size: 0.8rem; font-weight: 500; color: var(--success);">Est. 40 - 120 credits</div>
+        </div>
+    </div>
+
+    <!-- Media Uploads -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon icon-pink">📸</div>
+            <div>
+                <div class="card-title">Source Character</div>
+                <div class="card-desc">The subject you want to animate.</div>
+            </div>
+        </div>
+        <div class="tip-box">
+            <span>💡</span> For best results, use a high-quality front-facing photo showing the upper body clearly against a simple background.
+        </div>
+        <div class="upload-zone">
+            <input type="file" id="imageFile" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(this, 'image')"/>
+            <div class="upload-icon">🧑‍🎤</div>
+            <div class="upload-text">Drag & drop or click to upload photo</div>
+            <div class="upload-hint">Supports JPG, PNG, WEBP. Max size: 10MB</div>
+            <img class="upload-preview" id="imagePreview"/>
+            <div class="file-name" id="imageFilename"></div>
+            <div class="progress-container" id="imageProgress"><div class="progress-bar" id="imageBar"></div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon icon-emerald">🎬</div>
+            <div>
+                <div class="card-title">Reference Motion</div>
+                <div class="card-desc">The video containing the desired dance/movement.</div>
+            </div>
+        </div>
+        <div class="tip-box">
+            <span>💡</span> Ensure the reference subject's full body or upper body is clearly visible without heavy occlusion.
+        </div>
+        <div class="upload-zone">
+            <input type="file" id="videoFile" accept="video/mp4,video/quicktime" onchange="handleFileSelect(this, 'video')"/>
+            <div class="upload-icon">🕺</div>
+            <div class="upload-text">Drag & drop or click to upload video</div>
+            <div class="upload-hint">Supports MP4, MOV. Max size: 100MB (Max 30s)</div>
+            <div class="file-name" id="videoFilename"></div>
+            <div class="progress-container" id="videoProgress"><div class="progress-bar" id="videoBar"></div></div>
+        </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon icon-indigo">⚙️</div>
+            <div>
+                <div class="card-title">Generation Settings</div>
+                <div class="card-desc">Configure the output parameters.</div>
+            </div>
+        </div>
+        
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Resolution</label>
+                <select id="quality" onchange="updateEstimates()">
+                    <option value="720p">720p HD (Standard)</option>
+                    <option value="1080p">1080p FHD (High Quality)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Duration</label>
+                <select id="duration" onchange="updateEstimates()">
+                    <option value="10" selected>10 Seconds (Extended)</option>
+                    <option value="5">5 Seconds (Standard)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>Framing Strategy</label>
+            <select id="orientation">
+                <option value="image">Match Source Image Framing</option>
+                <option value="video">Match Reference Video Framing</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="margin-top: 1rem; margin-bottom: 0;">
+            <label>Custom Prompt (Optional)</label>
+            <input type="text" id="prompt" placeholder="E.g., cinematic lighting, smooth realistic motion, 4k..."/>
+        </div>
+    </div>
+
+    <!-- Cost Summary -->
+    <div class="cost-panel">
+        <div>
+            <div style="font-size: 0.85rem; font-weight: 500;">Current Setup</div>
+            <div style="font-size: 0.75rem; color: var(--muted);" id="setupLabel">Kling 3.0 • 720p • 10s</div>
+        </div>
+        <div class="cost-stat">
+            <div class="cost-sub">Estimated Cost</div>
+            <div class="cost-val" id="estCost">~200 credits</div>
+        </div>
+    </div>
+
+    <button class="btn-primary" id="generateBtn" onclick="initiateGeneration()">
+        <span id="btnText">✨ Generate AI Video</span>
+    </button>
+
+    <!-- Status Trackers -->
+    <div class="status-panel status-waiting" id="statusWaiting">
+        <div class="status-title" id="waitingTitle">Processing...</div>
+        <div class="status-desc" id="waitingDesc">Initializing workspace</div>
+        <div class="task-id" id="taskIdDisplay"></div>
+    </div>
+
+    <div class="status-panel status-error" id="statusError">
+        <div class="status-title">Generation Failed</div>
+        <div class="status-desc" id="errorMsg">Something went wrong.</div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-panel" id="resultPanel">
+        <div class="result-header">🎉 Your Animation is Ready!</div>
+        <video id="resultVideo" controls playsinline></video>
+        <a class="btn-download" id="downloadBtn" href="#" target="_blank" download="AI_Motion_Video.mp4">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download High Quality Video
+        </a>
+    </div>
+
+</div>
+
+<script>
+// --- Configuration ---
+const ENDPOINTS = {
+    UPLOAD: 'https://kieai.redpandaai.co/api/file-stream-upload',
+    API_BASE: 'https://api.kie.ai/api/v1',
+    CALLBACK: 'https://your-domain.com/api/callback' // Update this for production webhooks
+};
+
+// Cost estimations map (Model -> Duration -> Resolution)
+const COSTS = {
+    '2.6': { 
+        '5': { '720p': 40, '1080p': 60 }, 
+        '10': { '720p': 80, '1080p': 120 } 
+    },
+    '3.0': { 
+        '5': { '720p': 100, '1080p': 150 }, 
+        '10': { '720p': 200, '1080p': 300 } 
+    }
+};
+
+let appState = {
+    model: '3.0',
+    credits: null,
+    pollInterval: null
+};
+
+// --- Initialization & UI Updates ---
+window.onload = () => {
+    updateEstimates();
+    const savedKey = localStorage.getItem('kie_api_key');
+    if(savedKey) {
+        document.getElementById('apiKey').value = savedKey;
+        fetchCredits();
+    }
+};
+
+function selectModel(modelVersion) {
+    appState.model = modelVersion;
+    document.getElementById('model30').classList.toggle('active', modelVersion === '3.0');
+    document.getElementById('model26').classList.toggle('active', modelVersion === '2.6');
+    updateEstimates();
+}
+
+function updateEstimates() {
+    const quality = document.getElementById('quality').value;
+    const duration = document.getElementById('duration').value;
+    const cost = COSTS[appState.model][duration][quality];
+    
+    document.getElementById('setupLabel').textContent = `Kling ${appState.model} • ${quality} • ${duration}s`;
+    document.getElementById('estCost').textContent = `~${cost} credits`;
+}
+
+// --- API Key & Credits Logic ---
+let typingTimer;
+function debounceKeyChange() {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+        const key = document.getElementById('apiKey').value.trim();
+        if(key) {
+            localStorage.setItem('kie_api_key', key);
+            fetchCredits();
+        }
+    }, 800);
+}
+
+async function fetchCredits() {
+    const key = document.getElementById('apiKey').value.trim();
+    if (!key) return;
+
+    const icon = document.getElementById('refreshIcon');
+    icon.style.animation = 'spin 1s linear infinite';
+
+    try {
+        const response = await fetch(`${ENDPOINTS.API_BASE}/chat/credit`, {
+            headers: { 'Authorization': `Bearer ${key}` }
+        });
+        const json = await response.json();
+        
+        if (json.code === 200) {
+            appState.credits = json.data;
+            const display = document.getElementById('creditsCount');
+            display.textContent = appState.credits;
+            
+            // Color coding based on balance
+            if(appState.credits > 200) display.style.color = 'var(--success)';
+            else if(appState.credits > 50) display.style.color = 'var(--warn)';
+            else display.style.color = 'var(--error)';
+        }
+    } catch (error) {
+        console.error('Failed to fetch credits:', error);
+    } finally {
+        setTimeout(() => { icon.style.animation = 'none'; }, 500);
+    }
+}
+
+// --- File Handling ---
+function handleFileSelect(input, type) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const maxMb = type === 'image' ? 10 : 100;
+    if (file.size > maxMb * 1024 * 1024) {
+        alert(`File is too large! Maximum allowed size is ${maxMb}MB.`);
+        input.value = '';
+        return;
+    }
+
+    const filenameEl = document.getElementById(`${type}Filename`);
+    filenameEl.textContent = `✅ ${file.name}`;
+    filenameEl.style.display = 'block';
+
+    if (type === 'image') {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const preview = document.getElementById('imagePreview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+async function uploadMedia(file, type, key) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('uploadPath', type === 'image' ? 'images' : 'videos');
+
+    const progressContainer = document.getElementById(`${type}Progress`);
+    const progressBar = document.getElementById(`${type}Bar`);
+    
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '30%';
+
+    try {
+        const response = await fetch(ENDPOINTS.UPLOAD, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${key}` },
+            body: formData
+        });
+
+        progressBar.style.width = '80%';
+        const textData = await response.text();
+        const json = JSON.parse(textData);
+        
+        progressBar.style.width = '100%';
+
+        if (json.success === true || json.code === 200) {
+            const fileData = json.data || json;
+            const url = fileData.downloadUrl || fileData.fileUrl || fileData.url;
+            if (url) return url;
+            if (fileData.filePath) return `https://tempfile.redpandaai.co/${fileData.filePath}`;
+        }
+        throw new Error(json.msg || 'Upload failed');
+    } catch (err) {
+        throw new Error(`${type} upload failed: ${err.message}`);
+    }
+}
+
+// --- Main Generation Flow ---
+function setUIState(state, message = '', subtext = '') {
+    const btn = document.getElementById('generateBtn');
+    const waitingPanel = document.getElementById('statusWaiting');
+    const errorPanel = document.getElementById('statusError');
+    const resultPanel = document.getElementById('resultPanel');
+
+    if (state === 'idle') {
+        btn.disabled = false;
+        btn.innerHTML = '✨ Generate AI Video';
+        waitingPanel.style.display = 'none';
+        errorPanel.style.display = 'none';
+    } 
+    else if (state === 'processing') {
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div> Processing Request...';
+        waitingPanel.style.display = 'block';
+        errorPanel.style.display = 'none';
+        resultPanel.style.display = 'none';
+        document.getElementById('waitingTitle').innerHTML = `<div class="spinner"></div> ${message}`;
+        document.getElementById('waitingDesc').textContent = subtext;
+    }
+    else if (state === 'error') {
+        btn.disabled = false;
+        btn.innerHTML = '✨ Try Again';
+        waitingPanel.style.display = 'none';
+        errorPanel.style.display = 'block';
+        document.getElementById('errorMsg').textContent = message;
+    }
+}
+
+async function initiateGeneration() {
+    const key = document.getElementById('apiKey').value.trim();
+    const imgFile = document.getElementById('imageFile').files[0];
+    const vidFile = document.getElementById('videoFile').files[0];
+    const quality = document.getElementById('quality').value;
+    const duration = document.getElementById('duration').value;
+    const orientation = document.getElementById('orientation').value;
+    const prompt = document.getElementById('prompt').value.trim();
+
+    // Validations
+    if (!key) return setUIState('error', 'API Key is required for generation.');
+    if (!imgFile) return setUIState('error', 'Please upload a source image.');
+    if (!vidFile) return setUIState('error', 'Please upload a reference video.');
+
+    // Balance check
+    const requiredCost = COSTS[appState.model][duration][quality];
+    if (appState.credits !== null && appState.credits < requiredCost) {
+        return setUIState('error', `Insufficient Balance! You have ${appState.credits} credits, but ~${requiredCost} are required.`);
+    }
+
+    document.getElementById('taskIdDisplay').textContent = '';
+
+    try {
+        // 1. Upload Assets
+        setUIState('processing', 'Uploading Media', 'Securely transferring assets to servers...');
+        const imageUrl = await uploadMedia(imgFile, 'image', key);
+        const videoUrl = await uploadMedia(vidFile, 'video', key);
+
+        // 2. Submit Task
+        setUIState('processing', 'AI Initializing', 'Submitting job to Kling Compute Cluster...');
+        
+        const payload = {
+            model: `kling-${appState.model}/motion-control`,
+            callBackUrl: ENDPOINTS.CALLBACK,
+            input: {
+                prompt: prompt || "High quality character animation, smooth movements, 4k.",
+                input_urls: [imageUrl],
+                video_urls: [videoUrl],
+                mode: quality,
+                duration: parseInt(duration),
+                character_orientation: orientation
+            }
+        };
+
+        // Kling 3.0 specific requirement
+        if (appState.model === '3.0') {
+            payload.input.background_source = 'input_video'; 
+        }
+
+        const taskRes = await fetch(`${ENDPOINTS.API_BASE}/jobs/createTask`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+            body: JSON.stringify(payload)
+        });
+
+        const taskJson = await taskRes.json();
+        if (taskJson.code !== 200) throw new Error(taskJson.msg || 'Task submission failed');
+
+        const taskId = taskJson.data.taskId;
+        document.getElementById('taskIdDisplay').textContent = `Tracking ID: ${taskId}`;
+        
+        // 3. Poll for Results
+        pollStatus(taskId, key);
+
+    } catch (err) {
+        setUIState('error', err.message);
+    }
+}
+
+// --- Polling Logic ---
+function pollStatus(taskId, key) {
+    let secondsElapsed = 0;
+    if (appState.pollInterval) clearInterval(appState.pollInterval);
+
+    appState.pollInterval = setInterval(async () => {
+        secondsElapsed += 5;
+        setUIState('processing', 'Rendering Animation', `AI is processing frames. Elapsed: ${secondsElapsed}s...`);
+        
+        try {
+            const res = await fetch(`${ENDPOINTS.API_BASE}/jobs/recordInfo?taskId=${taskId}`, {
+                headers: { 'Authorization': `Bearer ${key}` }
+            });
+            const json = await res.json();
+            
+            if (json.code !== 200) {
+                clearInterval(appState.pollInterval);
+                throw new Error(json.msg || 'Status check failed');
+            }
+
+            const state = json.data.state;
+            
+            if (state === 'success') {
+                clearInterval(appState.pollInterval);
+                
+                const resultData = JSON.parse(json.data.resultJson);
+                const finalVideoUrl = resultData.resultUrls[0];
+                
+                // Show Result
+                document.getElementById('statusWaiting').style.display = 'none';
+                document.getElementById('resultPanel').style.display = 'block';
+                document.getElementById('resultVideo').src = finalVideoUrl;
+                document.getElementById('downloadBtn').href = finalVideoUrl;
+                
+                setUIState('idle');
+                
+                // Auto-refresh balance after job completion
+                setTimeout(fetchCredits, 2500);
+            } 
+            else if (state === 'fail' || state === 'failed') {
+                clearInterval(appState.pollInterval);
+                setUIState('error', `Generation Failed: ${json.data.failMsg || 'Model constraint error.'}`);
+            }
+        } catch (err) {
+            clearInterval(appState.pollInterval);
+            setUIState('error', err.message);
+        }
+    }, 5000); // Polling every 5 seconds
+}
+</script>
+</body>
+</html>
