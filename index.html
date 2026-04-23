@@ -284,7 +284,7 @@ video { width: 100%; border-radius: 12px; background: #000; border: 1px solid va
             </div>
         </div>
         <div class="tip-box">
-            <span>💡</span> Ensure the reference subject's full body or upper body is clearly visible without heavy occlusion.
+            <span>💡</span> Use a 20-30 sec dance video for longer output. Set "Framing Strategy" to "Video Framing" to get up to 30 sec animation!
         </div>
         <div class="upload-zone">
             <input type="file" id="videoFile" accept="video/mp4,video/quicktime" onchange="handleFileSelect(this, 'video')"/>
@@ -315,10 +315,9 @@ video { width: 100%; border-radius: 12px; background: #000; border: 1px solid va
                 </select>
             </div>
             <div class="form-group">
-                <label>Duration</label>
-                <select id="duration" onchange="updateEstimates()">
-                    <option value="10" selected>10 Seconds (Extended)</option>
-                    <option value="5">5 Seconds (Standard)</option>
+                <label>Duration (Auto)</label>
+                <select id="duration" onchange="updateEstimates()" style="pointer-events:none;opacity:0.6;">
+                    <option value="10">Auto (10-30s by orientation)</option>
                 </select>
             </div>
         </div>
@@ -326,8 +325,8 @@ video { width: 100%; border-radius: 12px; background: #000; border: 1px solid va
         <div class="form-group" style="margin-bottom: 0;">
             <label>Framing Strategy</label>
             <select id="orientation">
-                <option value="image">Match Source Image Framing</option>
-                <option value="video">Match Reference Video Framing</option>
+                <option value="video">Video Framing — Up to 30 sec ✅</option>
+                <option value="image">Image Framing — Up to 10 sec</option>
             </select>
         </div>
         
@@ -387,14 +386,8 @@ const ENDPOINTS = {
 
 // Cost estimations map (Model -> Duration -> Resolution)
 const COSTS = {
-    '2.6': { 
-        '5': { '720p': 40, '1080p': 60 }, 
-        '10': { '720p': 80, '1080p': 120 } 
-    },
-    '3.0': { 
-        '5': { '720p': 100, '1080p': 150 }, 
-        '10': { '720p': 200, '1080p': 300 } 
-    }
+    '2.6': { '720p': 40, '1080p': 60 },
+    '3.0': { '720p': 100, '1080p': 150 }
 };
 
 let appState = {
@@ -422,10 +415,11 @@ function selectModel(modelVersion) {
 
 function updateEstimates() {
     const quality = document.getElementById('quality').value;
-    const duration = document.getElementById('duration').value;
-    const cost = COSTS[appState.model][duration][quality];
+    const orientation = document.getElementById('orientation') ? document.getElementById('orientation').value : 'video';
+    const cost = COSTS[appState.model][quality];
+    const durationLabel = orientation === 'video' ? 'up to 30s' : 'up to 10s';
     
-    document.getElementById('setupLabel').textContent = `Kling ${appState.model} • ${quality} • ${duration}s`;
+    document.getElementById('setupLabel').textContent = `Kling ${appState.model} • ${quality} • ${durationLabel}`;
     document.getElementById('estCost').textContent = `~${cost} credits`;
 }
 
@@ -581,7 +575,7 @@ async function initiateGeneration() {
     if (!vidFile) return setUIState('error', 'Please upload a reference video.');
 
     // Balance check
-    const requiredCost = COSTS[appState.model][duration][quality];
+    const requiredCost = COSTS[appState.model][quality];
     if (appState.credits !== null && appState.credits < requiredCost) {
         return setUIState('error', `Insufficient Balance! You have ${appState.credits} credits, but ~${requiredCost} are required.`);
     }
@@ -605,7 +599,6 @@ async function initiateGeneration() {
                 input_urls: [imageUrl],
                 video_urls: [videoUrl],
                 mode: quality,
-                duration: parseInt(duration),
                 character_orientation: orientation
             }
         };
